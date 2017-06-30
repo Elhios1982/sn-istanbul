@@ -1,29 +1,31 @@
-//cmdb_rel_ci.list
-//cmdb_ci_apache_web_server.list
-
-
 //******************************************************************************
-//1. Get CIs list from cmdb_ci_apache_web_server
-//2. Limit list to first 10 records
-//3. For each element of this list get its sys_id
-//4. Relate each sys_id to an element in cmdb_rel_ci
+//This sys_id has matches in cmdb_rel_ci: 000f7333db2a72403c7930cf9d96193b
 //******************************************************************************
-var gr = new GlideRecord('cmdb_ci_apache_web_server');
-var gr2 = new GlideRecord('cmdb_rel_ci');
-var i = 0;
-gr.setLimit(10) //Set limit of rows returned
-gr.query(); //Execute the query
+var apache_web_server = new GlideRecord('cmdb_ci_apache_web_server');
+var look_up_sys_id = '275384c8db3af24015373c00ad961986';
 
-while(gr.next()){
+apache_web_server.addJoinQuery('cmdb_rel_ci', 'parent', 'sys_id'); //Join class table with rel where there is a sys_id match
+apache_web_server.addQuery('sys_id',look_up_sys_id)
+apache_web_server.query(); //Execute the query
 
-    gs.print("sys_id being searched " + gr.sys_id);
-    gr2.addQuery('parent', gr.sys_id)
-    gr2.query();
-    while(gr2.next()){
-        i++;
-        gs.print("Goes in: "+i);
-        gs.print('Parent: ' + gr2.parent.getDisplayValue() + ' Type: ' + gr2.type.getDisplayValue() + ' Child: ' + gr2.child.getDisplayValue());        
-    }
+if(apache_web_server.getRowCount() > 0){
+    var rel_ci = GlideRecord('cmdb_rel_ci');
+    var type_display_value;
+    rel_ci.addQuery('parent', look_up_sys_id);
+    rel_ci.query();
+    
+    gs.print(look_up_sys_id);
+    
+    while(rel_ci.next()){
+        type_display_value = rel_ci.type.getDisplayValue().toUpperCase();
+
+        if(type_display_value.search('RUNS ON::') > -1){
+            gs.print('For sys_id: '+ look_up_sys_id +' | Parent: ' + rel_ci.parent.getDisplayValue() + ' | Type: ' + rel_ci.type.getDisplayValue() + ' | Child: ' + rel_ci.child.getDisplayValue());
+        }
+    }    
 }
+
+
+
 
 
