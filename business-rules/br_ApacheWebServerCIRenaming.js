@@ -10,18 +10,20 @@
     apache_web_server.query(); //Execute the query
     
     if(apache_web_server.getRowCount() > 0){
-		gs.info("CI " + look_up_sys_id + " has a match on cmdb_rel_ci");
+		
         var rel_ci = GlideRecord('cmdb_rel_ci');
         var type_display_value;
         rel_ci.addQuery('parent', look_up_sys_id);
         rel_ci.query();
         
         while(rel_ci.next()){
-            type_display_value = rel_ci.type.getDisplayValue().toUpperCase();
-    
+            type_display_value = rel_ci.type.getDisplayValue().toUpperCase();    
             if(type_display_value.search('RUNS ON::') > -1){
-				gs.info("Finds RUNS ON and tries to rename CI");
-                current.name =  "Apache " + current.version + "@" + rel_ci.child.getDisplayValue() + ":"+current.tcp_port;
+                if(current.version.toUpperCase().search('APACHE') > -1 ){
+                    current.name =  current.version + "@" + rel_ci.child.getDisplayValue() + ":"+current.tcp_port;
+                }else{
+                    current.name =  "Apache " + current.version + "@" + rel_ci.child.getDisplayValue() + ":"+current.tcp_port;
+                }                
             }
         }    
     }	
